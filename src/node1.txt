@@ -1,0 +1,154 @@
+const Node = require('./node');
+
+class MaxHeap {
+	constructor() {
+		this.root = null;
+		this.parentNodes = [];
+	}
+
+	push(data, priority) {
+		var node = new Node();
+		node.data = data;
+		node.priority = priority;
+		this.insertNode(node);
+		this.shiftNodeUp(node);
+	}
+
+	pop() {
+		if (this.root == null) return;
+
+		var node = this.parentNodes.pop();
+		//this.detachRoot();
+		return this.root.data;
+	}
+
+	detachRoot() {
+
+		var detachedRoot = this.parentNodes.pop();
+		//console.log("detachRoot" + detachedRoot);
+		this.root = null;
+		return detachedRoot;
+	}
+
+	restoreRootFromLastInsertedNode(detached) {
+		this.root = detached;
+		//console.log(this.parentNodes[1].data);
+		this.insertNode(this.parentNodes[0]);
+	}
+
+	size() {
+		return this.parentNodes.length;
+	}
+
+	isEmpty() {
+		if (this.parentNodes.length == 0) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	clear() {
+		this.root = null;
+		this.parentNodes = [];
+	}
+
+	insertNode(node) {
+		if (this.root == null) {
+			this.root = node;
+		}
+		else {
+			this.root.appendChild(node);
+		}
+		this.parentNodes.push(node);
+		if (node.parent && node == node.parent.right) {
+
+			var shiftedNode = this.parentNodes.shift();
+			// this.parentNodes.push(shiftedNode);
+		}
+
+
+
+
+	}
+
+	shiftNodeUp(node) {
+		if (node.parent){
+			if( node.parent.priority < node.priority) {
+				node.swapWithParent();
+/*				if (node.parent) {
+					var nodeForChange = this.parentNodes.shift();
+					var swappedNode = this.parentNodes.pop();
+					this.parentNodes.push(nodeForChange);
+					this.parentNodes.unshift(swappedNode);
+				}*/
+				this.shiftNodeUp(node);
+			}
+			else {
+				if(node.parent.parent)
+					this.shiftNodeUp(node.parent);
+			}
+		}
+		else {
+			var prevRoot = this.root;
+			this.parentNodes.shift();//this shifted node == node;
+			this.parentNodes.unshift(prevRoot);
+			this.root = node;
+			//console.log("this.parentNodes = "+this.parentNodes);
+			var sortedArray = [];
+			setInSortedOrder(this.root);
+
+			function setInSortedOrder(node) {
+				if (node.left) {
+					sortedArray.push(node.left);
+					if (node.right) {
+						sortedArray.push(node.right);
+					}
+					setInSortedOrder(node.left);
+				}
+			}
+
+			this.parentNodes = sortedArray;
+		}
+
+	}
+
+	shiftNodeDown(node) {
+		if (node.left){
+			if(node.left.priority > node.priority) {
+				this.shiftNodeUp(node.left);
+				this.shiftNodeDown(node);
+			} else{
+				if(node.left.left)
+					this.shiftNodeDown(node.left);
+			}
+		}
+		else
+		{
+			var maxPriorityNode = this.root;
+			for( var i = 0; i< this.parentNodes.length; i++){
+				if(this.parentNodes[i].priority > maxPriorityNode.priority){
+					maxPriorityNode = this.parentNodes[i];
+				}
+			}
+			this.root = maxPriorityNode;
+			var sortedArray = [];
+			setInSortedOrder(this.root);
+
+			function setInSortedOrder(node) {
+				if (node.left) {
+					sortedArray.push(node.left);
+					if (node.right) {
+						sortedArray.push(node.right);
+					}
+					setInSortedOrder(node.left);
+				}
+			}
+
+			this.parentNodes = sortedArray;
+		}
+	}
+}
+
+module.exports = MaxHeap;
